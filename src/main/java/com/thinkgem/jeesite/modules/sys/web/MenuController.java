@@ -173,4 +173,81 @@ public class MenuController extends BaseController {
 		}
 		return mapList;
 	}
+	
+	@RequiresPermissions("user")
+	@RequestMapping(value = "all")
+	public String all(HttpServletResponse response) {
+		List<Menu> list = systemService.findAllMenu();
+		return renderString(response, list);
+	}
+	
+	@RequiresPermissions("user")
+	@RequestMapping(value = "subtree")
+	public String subtree(String parentId, HttpServletResponse response) {
+		Map<String, Map<String, Object>> menus = Maps.newHashMap();
+		List<Menu> list = systemService.findAllMenu();
+		
+		for (int cnt = 0; cnt < list.size(); cnt ++){
+			Menu e = list.get(cnt);
+			if (e.getParentIds().indexOf(","+ parentId +",") > -1){
+				if(e.getIsShow().equals("1")){
+					Map<String, Object> menu = Maps.newHashMap();
+					menu.put("id", e.getId());
+					menu.put("name", e.getName());
+					menu.put("href", e.getHref());
+					menu.put("icon", e.getIcon());
+					menu.put("target", e.getTarget());
+					menu.put("sort", e.getSort());
+					menu.put("permission", e.getPermission());
+					menu.put("parentId", e.getParentId());
+					menu.put("parentIds", e.getParentIds());
+					
+					menus.put(e.getId(), menu);
+				}
+			}
+		}
+		
+		Map<String, Object> result = Maps.newHashMap();
+		result.put("parentId", parentId);
+		result.put("menus", menus);
+		
+		return renderString(response, result);
+	}
+
+	@RequiresPermissions("user")
+	@RequestMapping(value = "frontTree")
+	public String frontTree(HttpServletResponse response) {
+		String currentNav = "62";
+		return subtree(currentNav, response);
+	}
+	
+	@RequiresPermissions("user")
+	@RequestMapping(value = "topNav")
+	public String topNav(HttpServletResponse response) {
+		String parentId = "1";
+		
+		List<Map<String, Object>> menus = Lists.newArrayList();
+		List<Menu> list = systemService.findAllMenu();
+		
+		for (int cnt = 0; cnt < list.size(); cnt ++){
+			Menu e = list.get(cnt);
+			if (parentId.equals(e.getParentId())){
+				if(e.getIsShow().equals(parentId)){
+					Map<String, Object> menu = Maps.newHashMap();
+					menu.put("id", e.getId());
+					menu.put("name", e.getName());
+					menu.put("href", e.getHref());
+					menu.put("icon", e.getIcon());
+					menu.put("target", e.getTarget());
+					menu.put("sort", e.getSort());
+					menu.put("permission", e.getPermission());
+					menu.put("parentId", e.getParentId());
+					menu.put("parentIds", e.getParentIds());
+					menus.add(menu);
+				}
+			}
+		}
+		return renderString(response, menus);
+	}
+	
 }

@@ -7,6 +7,7 @@ import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
@@ -26,9 +27,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.thinkgem.jeesite.common.beanvalidator.BeanValidators;
 import com.thinkgem.jeesite.common.mapper.JsonMapper;
 import com.thinkgem.jeesite.common.utils.DateUtils;
+import com.thinkgem.jeesite.common.utils.HttpUtils;
+import com.thinkgem.jeesite.modules.sys.entity.Menu;
+import com.thinkgem.jeesite.modules.sys.service.SystemService;
 
 /**
  * 控制器支持类
@@ -163,6 +169,21 @@ public abstract class BaseController {
 			return null;
 		}
 	}
+	
+	/**
+	 * 获取渲染数据后的模板
+	 * @param response
+	 * @param page
+	 * @param object
+	 * @return
+	 */
+	protected String renderTemplate(HttpServletResponse response, String page, Object object) {
+		String renderUrl = "http://localhost:3001/render";
+		renderUrl = renderUrl + "?page=" + page;
+		String result = HttpUtils.sendPost(renderUrl, JsonMapper.toJsonString(object));
+		renderString(response, result, "text/html");
+		return null;
+	}
 
 	/**
 	 * 参数绑定异常
@@ -211,6 +232,39 @@ public abstract class BaseController {
 //				return value != null ? DateUtils.formatDateTime((Date)value) : "";
 //			}
 		});
+	}
+	
+	/**
+	 * 客户端返回JSON字符串
+	 * @param response
+	 * @param object
+	 * @return
+	 */
+	protected List<Map<String, Object>> getTopNav(SystemService systemService) {
+		String parentId = "1";
+		
+		List<Map<String, Object>> menus = Lists.newArrayList();
+		List<Menu> list = systemService.findAllMenu();
+		
+		for (int cnt = 0; cnt < list.size(); cnt ++){
+			Menu e = list.get(cnt);
+			if (parentId.equals(e.getParentId())){
+				if(e.getIsShow().equals(parentId)){
+					Map<String, Object> menu = Maps.newHashMap();
+					menu.put("id", e.getId());
+					menu.put("name", e.getName());
+					menu.put("href", e.getHref());
+					menu.put("icon", e.getIcon());
+					menu.put("target", e.getTarget());
+					menu.put("sort", e.getSort());
+					menu.put("permission", e.getPermission());
+					menu.put("parentId", e.getParentId());
+					menu.put("parentIds", e.getParentIds());
+					menus.add(menu);
+				}
+			}
+		}
+		return menus;
 	}
 	
 }

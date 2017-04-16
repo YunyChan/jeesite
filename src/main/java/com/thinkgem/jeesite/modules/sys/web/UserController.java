@@ -73,6 +73,16 @@ public class UserController extends BaseController {
 		return "modules/sys/userList";
 	}
 	
+	@RequiresPermissions("sys:user:view")
+	@RequestMapping(value = {"test", ""})
+	public String test(User user, HttpServletRequest request, HttpServletResponse response, Model model) {
+		Map<String, Object> data = Maps.newHashMap();
+		data.put("user", UserUtils.getUser());
+		data.put("nav", getTopNav(systemService));
+		data.put("test", 1);
+		return renderTemplate(response, "demo", data);
+	}
+	
 	@ResponseBody
 	@RequiresPermissions("sys:user:view")
 	@RequestMapping(value = {"listData"})
