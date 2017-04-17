@@ -3,6 +3,7 @@
  */
 package com.thinkgem.jeesite.modules.sys.web;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -79,6 +81,8 @@ public class UserController extends BaseController {
 		Map<String, Object> data = Maps.newHashMap();
 		data.put("user", UserUtils.getUser());
 		data.put("nav", getTopNav(systemService));
+		data.put("role", SecurityUtils.getSubject().hasAllRoles(Arrays.asList("hr")));
+
 		data.put("test", 1);
 		return renderTemplate(response, "demo", data);
 	}
